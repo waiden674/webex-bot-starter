@@ -1,3 +1,9 @@
+# Webex Game Bot
+This is a Hackathon project based on the Webex-Bot-Starter for the 2020 Cisco Webex Virtual Hackathon. We created a bot that will allow friends and co-worker alike to play various games between themselves, facilitating virtual socialization and settling who once and for all is the greatest at Rock Paper Scissors. The installation process is the same as the normal Webex-Bot-Starter as described below. 
+
+Currently, only Rock Paper Scissors has been implemented as a game, but there are plans to implement more social tabletop games such as Mafia and Secret Hitler.
+
+
 # Webex-Bot-Starter
 
 ### Starter kit and template for a simple Webex Teams bot
