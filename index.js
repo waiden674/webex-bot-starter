@@ -170,6 +170,90 @@ let cardJSON =
     }]
 };
 
+let rpsJSON =
+{
+  $schema : "http://adaptivecards.io/schemas/adaptive-card.json",
+  version: "1.0",
+  type : "AdaptiveCard",
+  body: [
+      {
+          type: "ColumnSet",
+          columns: [
+              {
+                  type: "Column",
+                  items: [
+                      {
+                          type: "Image",
+                          style: "Person",
+                          url: "https://developer.webex.com/images/webex-teams-logo.png",
+                          size: "Medium",
+                          height: "50px"
+                      }
+                  ],
+                  width: "auto"
+              },
+              {
+                  type: "Column",
+                  items: [
+                      {
+                          type: "TextBlock",
+                          text: "UW Game Bot",
+                          weight: "Lighter",
+                          color: "Accent"
+                      },
+                      {
+                          type: "TextBlock",
+                          weight: "Bolder",
+                          text: "Rock Paper Scissors",
+                          wrap: true,
+                          color: "Light",
+                          size: "Large",
+                          spacing: "Small"
+                      }
+                  ],
+                  width: "stretch"
+              }
+          ]
+      },
+      {
+          type: "TextBlock",
+          text: "Make your choice!",
+          wrap: true,
+          horizontalAlignment: "Center"
+      },
+      {
+          type: "ActionSet",
+          actions: [
+              {
+                  type: "Action.Submit",
+                  title: "Jan",
+                  data: {
+                      "rock": true
+                  },
+                  style: "destructive"
+              },
+              {
+                  type: "Action.Submit",
+                  title: "Ken",
+                  data: {
+                      "paper": true
+                  }
+              },
+              {
+                  type: "Action.Submit",
+                  title: "Pon",
+                  data: {
+                      "scissors": true
+                  },
+                  style: "positive"
+              }
+          ],
+          spacing: "None",
+          horizontalAlignment: "Center"
+      }
+  ],
+};
+
 /* On mention with card example
 ex User enters @botname 'card me' phrase, the bot will produce a personalized card - https://developer.webex.com/docs/api/guides/cards
 */
@@ -184,6 +268,98 @@ framework.hears('card me', function (bot, trigger) {
   bot.sendCard(cardJSON, 'This is customizable fallback text for clients that do not support buttons & cards');
 });
 
+/*
+Rock Paper Scissors code
+code to dm specific people:
+bot.dmCard(email,rpsJSON, 'this is the RPS card').then((value)=>{
+     console.log(value);
+ });
+*/
+let user1_id = null;
+let user2_id = null;
+let username1 = null;
+let username2 = null;
+let user1_choice = null;
+let user2_choice = null;
+
+let webex = framework.getWebexSDK();
+
+framework.hears('RPS', function( bot, trigger){
+  console.log("Rock Paper Scissors was called");
+  bot.say("Rock Paper Scissors was called");
+  // bot.say(`message= ${JSON.stringify(trigger.message, null, 2)}`);
+  responded = true;
+
+  let email = framework.getPersonEmail(trigger.person);
+  user1_id = trigger.message.personId;
+  user2_id = trigger.message.mentionedPeople[1];
+  console.log(typeof webex);
+  webex.people.get(user1_id).then(person =>{
+    username1 = person.displayName;
+  })
+  webex.people.get(user2_id).then(person =>{
+    username2 = person.displayName;
+  })
+
+  
+  
+  bot.sendCard(rpsJSON, 'this is the RPS card');
+});
+
+function process_choice(choice){
+  if('rock' in choice){
+    return 'r';
+  }
+  else if('paper' in choice){
+    return 'p';
+  }
+  else if('scissors' in choice){
+    return 's';
+  }
+}
+
+function process_win(bot){
+  if(user1_choice == user2_choice){
+    bot.say('The match ended in a draw!');
+  }
+  else if((user1_choice == 'r' && user2_choice == 's') ||
+          (user1_choice == 'p' && user2_choice == 'r') ||
+          (user1_choice == 's' && user2_choice == 'p')){
+    bot.say(`${username1} Wins!`)
+  }
+  else{
+    bot.say(`${username2} Wins!`)
+  }
+}
+
+function reset_rps(){
+  user1_choice = null;
+  user2_choice = null;
+  user1_id = null;
+  user2_id = null;
+  username1 = null;
+  username2 = null;
+}
+
+// Process a submitted card
+framework.on('attachmentAction', function (bot, trigger) {
+  // bot.say(`Got an attachmentAction:\n${JSON.stringify(trigger.attachmentAction, null, 2)}`);
+  let json = trigger.attachmentAction;
+  if(json.personId == user1_id ){
+    user1_choice = process_choice(json.inputs);
+    // bot.say(`User 1 chose ${user1_choice}`)
+  }
+  else if(json.personId == user2_id ){
+    user2_choice = process_choice(json.inputs);
+  }
+
+  if(user1_choice != null && user2_choice != null){
+    //compute who won
+    process_win(bot);
+    reset_rps();
+  }
+});
+
 /* On mention reply example
 ex User enters @botname 'reply' phrase, the bot will post a threaded reply
 */
@@ -194,8 +370,8 @@ framework.hears('reply', function (bot, trigger) {
     'This is threaded reply sent using the `bot.reply()` method.',
     'markdown');
   var msg_attach = {
-    text: "This is also threaded reply with an attachment sent via bot.reply(): ",
-    file: 'https://media2.giphy.com/media/dTJd5ygpxkzWo/giphy-downsized-medium.gif'
+    text: "hmpf",
+    file: 'https://media.giphy.com/media/IcpapB2BMfiihmKBQM/giphy.gif'
   };
   bot.reply(trigger.message, msg_attach);
 });
