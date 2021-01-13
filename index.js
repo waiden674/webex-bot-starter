@@ -170,6 +170,7 @@ let cardJSON =
     }]
 };
 
+//Rock Paper Scissors
 let rpsJSON =
 {
   $schema : "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -226,7 +227,7 @@ let rpsJSON =
           actions: [
               {
                   type: "Action.Submit",
-                  title: "Jan",
+                  title: "Rock",
                   data: {
                       "rock": true
                   },
@@ -234,14 +235,14 @@ let rpsJSON =
               },
               {
                   type: "Action.Submit",
-                  title: "Ken",
+                  title: "Paper",
                   data: {
                       "paper": true
                   }
               },
               {
                   type: "Action.Submit",
-                  title: "Pon",
+                  title: "Scissors",
                   data: {
                       "scissors": true
                   },
@@ -270,10 +271,6 @@ framework.hears('card me', function (bot, trigger) {
 
 /*
 Rock Paper Scissors code
-code to dm specific people:
-bot.dmCard(email,rpsJSON, 'this is the RPS card').then((value)=>{
-     console.log(value);
- });
 */
 let user1_id = null;
 let user2_id = null;
@@ -285,15 +282,13 @@ let user2_choice = null;
 let webex = framework.getWebexSDK();
 
 framework.hears('RPS', function( bot, trigger){
-  console.log("Rock Paper Scissors was called");
+  console.log("Rock Paper Scissors was called");    //Rock Paper Scissors Game is initiated when the bot hears the key word 'RPS'
   bot.say("Rock Paper Scissors was called");
-  // bot.say(`message= ${JSON.stringify(trigger.message, null, 2)}`);
   responded = true;
 
   let email = framework.getPersonEmail(trigger.person);
-  user1_id = trigger.message.personId;
+  user1_id = trigger.message.personId;              //The challenger and the challengee's identities are retrieved
   user2_id = trigger.message.mentionedPeople[1];
-  console.log(typeof webex);
   webex.people.get(user1_id).then(person =>{
     username1 = person.displayName;
   })
@@ -306,7 +301,7 @@ framework.hears('RPS', function( bot, trigger){
   bot.sendCard(rpsJSON, 'this is the RPS card');
 });
 
-function process_choice(choice){
+function process_choice(choice){  //Process the each user's choice
   if('rock' in choice){
     return 'r';
   }
@@ -318,7 +313,7 @@ function process_choice(choice){
   }
 }
 
-function process_win(bot){
+function process_win(bot){          //Process both user's choice and declare the winner
   if(user1_choice == user2_choice){
     bot.say('The match ended in a draw!');
   }
@@ -332,7 +327,7 @@ function process_win(bot){
   }
 }
 
-function reset_rps(){
+function reset_rps(){      //Resets the rock paper scissors game and prepares for the next
   user1_choice = null;
   user2_choice = null;
   user1_id = null;
